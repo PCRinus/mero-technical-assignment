@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CalendarEntry } from '@prisma/client';
 import { PrismaService } from 'src/shared/prisma.service';
-import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry-dto';
+import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry.dto';
 
 const FETCH_LIMIT = 25;
 

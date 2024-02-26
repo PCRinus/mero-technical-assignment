@@ -1,9 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
-import { CreateCalendarEntryDto } from './dtos/create-calendar-entry-dto';
+import { CreateCalendarEntryDto } from './dtos/create-calendar-entry.dto';
 import { CalendarService } from './calendar.service';
-import { ListAllCalendarEntriesDto } from './dtos/list-all-calendar-entries-dto';
-import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry-dto';
+import { ListAllCalendarEntriesDto } from './dtos/list-all-calendar-entries.dto';
+import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Calendar')
 @Controller('calendar')
 export class CalendarController {
   constructor(private readonly calendarService: CalendarService) {}
