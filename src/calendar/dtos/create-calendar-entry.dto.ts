@@ -1,4 +1,4 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCalendarEntryDto {
   @IsNotEmpty()
@@ -6,10 +6,10 @@ export class CreateCalendarEntryDto {
   title: string;
 
   @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   startDate: Date;
 
-  @IsDate()
+  @IsDateString()
   @IsNotEmpty()
   endDate: Date;
 

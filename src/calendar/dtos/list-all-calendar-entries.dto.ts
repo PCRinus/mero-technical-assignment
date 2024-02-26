@@ -1,15 +1,19 @@
-import { IsDate, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class ListAllCalendarEntriesDto {
-  @IsDate()
+  @IsDateString()
   @IsNotEmpty()
-  start: Date;
+  start: string;
 
-  @IsDate()
+  @IsDateString()
   @IsNotEmpty()
-  end: Date;
+  end: string;
 
   @IsNumber()
+  @Type(() => Number)
+  @Min(1)
+  @Max(100)
   @IsOptional()
   limit?: number;
 }
