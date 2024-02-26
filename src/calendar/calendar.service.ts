@@ -2,20 +2,39 @@ import { Injectable } from '@nestjs/common';
 import { CalendarEntry } from '@prisma/client';
 import { PrismaService } from 'src/shared/prisma.service';
 import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry.dto';
+import { CreateCalendarEntryDto } from './dtos/create-calendar-entry.dto';
 
 const FETCH_LIMIT = 25;
 
+type CreateCalendarEntry = CreateCalendarEntryDto;
 type UpdatedCalendarEntry = UpdateCalendarEntryDto;
 @Injectable()
 export class CalendarService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async createCalendarEntry(calendarEntry: Omit<CalendarEntry, 'id' | 'createdAt' | 'updatedAt'>) {
-    const result = await this.prismaService.calendarEntry.create({
-      data: calendarEntry,
+  async createCalendarEntry(calendarEntry: CreateCalendarEntry) {
+    const { forceOverlap, ...calendarEntryData } = calendarEntry;
+
+    const existingEntry = await this.prismaService.calendarEntry.findFirst({
+      where: {
+        startDate: {
+          lte: calendarEntry.endDate,
+        },
+        endDate: {
+          gte: calendarEntry.startDate,
+        },
+      },
     });
 
-    return result.id;
+    if (existingEntry && !forceOverlap) {
+      throw new Error('Entry overlaps with existing entry');
+    }
+
+    const newEntry = await this.prismaService.calendarEntry.create({
+      data: calendarEntryData,
+    });
+
+    return newEntry.id;
   }
 
   async listAllCalendarEntries(
@@ -51,13 +70,28 @@ export class CalendarService {
     id: number,
     updatedCalendarEntry: UpdatedCalendarEntry,
   ): Promise<CalendarEntry> {
+    const { forceOverlap, ...calendarEntryData } = updatedCalendarEntry;
+
+    const existingEntry = await this.prismaService.calendarEntry.findFirst({
+      where: {
+        startDate: {
+          lte: updatedCalendarEntry.endDate,
+        },
+        endDate: {
+          gte: updatedCalendarEntry.startDate,
+        },
+      },
+    });
+
+    if (existingEntry && !forceOverlap) {
+      throw new Error('Entry overlaps with existing entry');
+    }
+
     return await this.prismaService.calendarEntry.update({
       where: {
         id,
       },
-      data: {
-        title: updatedCalendarEntry.title,
-      },
+      data: calendarEntryData,
     });
   }
 }
