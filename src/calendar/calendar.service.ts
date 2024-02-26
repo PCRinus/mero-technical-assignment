@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CalendarEntry } from '@prisma/client';
 import { PrismaService } from 'src/shared/prisma.service';
 import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry.dto';
@@ -27,7 +27,7 @@ export class CalendarService {
     });
 
     if (existingEntry && !forceOverlap) {
-      throw new Error('Entry overlaps with existing entry');
+      throw new HttpException('Entry overlaps with existing entry', HttpStatus.CONFLICT);
     }
 
     const newEntry = await this.prismaService.calendarEntry.create({
@@ -84,7 +84,7 @@ export class CalendarService {
     });
 
     if (existingEntry && !forceOverlap) {
-      throw new Error('Entry overlaps with existing entry');
+      throw new HttpException('Entry overlaps with existing entry', HttpStatus.CONFLICT);
     }
 
     return await this.prismaService.calendarEntry.update({

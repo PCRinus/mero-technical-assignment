@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { CreateCalendarEntryDto } from './dtos/create-calendar-entry.dto';
 import { CalendarService } from './calendar.service';
 import { ListAllCalendarEntriesDto } from './dtos/list-all-calendar-entries.dto';
@@ -12,13 +24,24 @@ export class CalendarController {
 
   @Post()
   async createCalendarEntry(@Body() createCalendarDto: CreateCalendarEntryDto) {
+    const { startDate, endDate } = createCalendarDto;
+
+    if (startDate > endDate)
+      throw new HttpException('Start date cannot be greater than end date', HttpStatus.BAD_REQUEST);
+
     return await this.calendarService.createCalendarEntry(createCalendarDto);
   }
 
   @Get()
-  async getCalendarEntries(@Param() query: ListAllCalendarEntriesDto) {
+  async getCalendarEntries(@Query() query: ListAllCalendarEntriesDto) {
     const { start, end, limit } = query;
-    return await this.calendarService.listAllCalendarEntries(start, end, limit);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    if (startDate > endDate)
+      throw new HttpException('Start date cannot be greater than end date', HttpStatus.BAD_REQUEST);
+
+    return await this.calendarService.listAllCalendarEntries(startDate, endDate, limit);
   }
 
   @Delete(':id')
