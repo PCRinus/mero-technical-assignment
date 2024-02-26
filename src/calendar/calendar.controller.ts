@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { CreateCalendarEntryDto } from './dtos/create-calendar-entry-dto';
 import { CalendarService } from './calendar.service';
 import { ListAllCalendarEntriesDto } from './dtos/list-all-calendar-entries-dto';
@@ -28,18 +20,15 @@ export class CalendarController {
   }
 
   @Delete(':id')
-  async deleteCalendarEntry(@Param('id') id: string) {
+  async deleteCalendarEntry(@Param('id', ParseIntPipe) id: number) {
     return await this.calendarService.deleteCalendarEntry(id);
   }
 
   @Put(':id')
   async updateCalendarEntry(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateCalendarDto: UpdateCalendarEntryDto,
   ) {
-    return await this.calendarService.updateCalendarEntry(
-      id,
-      updateCalendarDto,
-    );
+    return await this.calendarService.updateCalendarEntry(id, updateCalendarDto);
   }
 }
