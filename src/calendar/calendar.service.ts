@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CalendarEntry } from '@prisma/client';
 import { PrismaService } from '../shared/prisma.service';
 import { CreateRecurringCalendarEntryDto } from './dtos/create-recurring-calendar-entry.dto';
+import { randomUUID } from 'node:crypto';
 
 const FETCH_LIMIT = 25;
 
@@ -54,11 +55,16 @@ export class CalendarService {
   async createRecurringCalendarEntry(recurringCalendarEntry: CreateRecurringCalendarEntry) {
     const recurringEntries = this.generateRecurringEntries(recurringCalendarEntry);
     const createdIds = [];
+    const recurringGroupUuid = randomUUID();
 
     //NOTE: since createMany is not supported in SQLite, we will need to iterate and create each entry
     for await (const entry of recurringEntries) {
+      const data: Omit<CalendarEntry, 'id' | 'createdAt' | 'updatedAt'> = {
+        ...entry,
+        recurringGroup: recurringGroupUuid,
+      };
       const result = await this.prismaService.calendarEntry.create({
-        data: entry,
+        data,
       });
       createdIds.push(result.id);
     }
