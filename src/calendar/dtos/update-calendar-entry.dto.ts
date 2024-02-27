@@ -1,4 +1,5 @@
-import { IsBoolean, IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateCalendarEntryDto {
   @IsNotEmpty()
@@ -6,11 +7,13 @@ export class UpdateCalendarEntryDto {
   title: string;
 
   @IsNotEmpty()
-  @IsDateString()
+  @IsDate()
+  @Transform(({ value }) => new Date(value))
   startDate: Date;
 
-  @IsDateString()
   @IsNotEmpty()
+  @IsDate()
+  @Transform(({ value }) => new Date(value))
   endDate: Date;
 
   @IsBoolean()

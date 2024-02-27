@@ -34,9 +34,7 @@ export class CalendarController {
 
   @Get()
   async getCalendarEntries(@Query() query: ListAllCalendarEntriesDto) {
-    const { start, end, limit } = query;
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const { startDate, endDate, limit } = query;
 
     if (startDate > endDate)
       throw new HttpException('Start date cannot be greater than end date', HttpStatus.BAD_REQUEST);
