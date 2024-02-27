@@ -1,13 +1,22 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CalendarEntry } from '@prisma/client';
 import { PrismaService } from '../shared/prisma.service';
-import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry.dto';
-import { CreateCalendarEntryDto } from './dtos/create-calendar-entry.dto';
 
 const FETCH_LIMIT = 25;
 
-export type CreateCalendarEntry = CreateCalendarEntryDto;
-export type UpdatedCalendarEntry = UpdateCalendarEntryDto;
+export type CreateCalendarEntry = {
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  forceOverlap?: boolean;
+};
+
+export type UpdatedCalendarEntry = {
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  forceOverlap?: boolean;
+};
 @Injectable()
 export class CalendarService {
   constructor(private readonly prismaService: PrismaService) {}

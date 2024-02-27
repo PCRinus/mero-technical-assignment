@@ -24,12 +24,18 @@ export class CalendarController {
 
   @Post()
   async createCalendarEntry(@Body() createCalendarDto: CreateCalendarEntryDto) {
-    const { startDate, endDate } = createCalendarDto;
+    const { start, end } = createCalendarDto;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
 
     if (startDate > endDate)
       throw new HttpException('Start date cannot be greater than end date', HttpStatus.BAD_REQUEST);
 
-    return await this.calendarService.createCalendarEntry(createCalendarDto);
+    return await this.calendarService.createCalendarEntry({
+      ...createCalendarDto,
+      startDate,
+      endDate,
+    });
   }
 
   @Get()
@@ -52,6 +58,13 @@ export class CalendarController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCalendarDto: UpdateCalendarEntryDto,
   ) {
-    return await this.calendarService.updateCalendarEntry(id, updateCalendarDto);
+    const { start, end } = updateCalendarDto;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    return await this.calendarService.updateCalendarEntry(id, {
+      ...updateCalendarDto,
+      startDate,
+      endDate,
+    });
   }
 }
