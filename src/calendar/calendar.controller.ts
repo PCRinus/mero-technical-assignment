@@ -17,6 +17,7 @@ import { ListAllCalendarEntriesDto } from './dtos/list-all-calendar-entries.dto'
 import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateRecurringCalendarEntryDto } from './dtos/create-recurring-calendar-entry.dto';
+import { UpdateRecurringCalendarEntryDto } from './dtos/update-recurring-calendar-entry.dto';
 
 @ApiTags('Calendar')
 @Controller('calendar')
@@ -86,5 +87,13 @@ export class CalendarController {
       startDate,
       endDate,
     });
+  }
+
+  @Put('recurring/:recurringGroupId')
+  async updateRecurringEntries(
+    @Param('recurringGroupId') groupId: string,
+    @Body() recurringDto: UpdateRecurringCalendarEntryDto,
+  ) {
+    return await this.calendarService.updateRecurringCalendarEntry(groupId, recurringDto);
   }
 }
