@@ -46,3 +46,11 @@ This app was not published to npm, but the publishing command was tested with
 ```bash
 npm publish --dry-run=true
 ```
+
+## Improvement directions and missing features
+
+- Authentication for the API
+- Logging, currently none is added
+- Repository layer, currently we call the prisma service directly in the service layer
+- Better error handling using some sort of interceptor, currently we throw errors in a chaotic way
+- Better unit testing coverage and add some e2e tests
