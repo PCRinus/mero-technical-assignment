@@ -1,10 +1,13 @@
 {
-  "name": "mero-technical-assignement",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "name": "mero-technical-assignment",
+  "version": "1.0.0",
+  "description": "Mero technical assignment",
+  "main": "dist/main.js",
+  "author": "mircea.casapu@gmail.com",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
