@@ -3,6 +3,7 @@ import { CalendarEntry } from '@prisma/client';
 import { PrismaService } from '../shared/prisma.service';
 import { CreateRecurringCalendarEntryDto } from './dtos/create-recurring-calendar-entry.dto';
 import { randomUUID } from 'node:crypto';
+import { UpdateRecurringCalendarEntryDto } from './dtos/update-recurring-calendar-entry.dto';
 
 const FETCH_LIMIT = 25;
 
@@ -17,12 +18,14 @@ export type CreateCalendarEntry = {
 };
 
 export type CreateRecurringCalendarEntry = CreateRecurringCalendarEntryDto;
+
 export type UpdatedCalendarEntry = {
   title: string;
   startDate: Date;
   endDate: Date;
   forceOverlap?: boolean;
 };
+export type UpdatedRecurringCalendarEntry = UpdateRecurringCalendarEntryDto;
 @Injectable()
 export class CalendarService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -155,6 +158,33 @@ export class CalendarService {
     });
   }
 
+  async updateRecurringCalendarEntry(
+    groupId: string,
+    updatedCalendarEntry: UpdatedRecurringCalendarEntry,
+  ) {
+    const recurringCalendarEntries = await this.prismaService.calendarEntry.findMany({
+      where: {
+        recurringGroup: groupId,
+      },
+      select: {
+        recurringRule: true,
+      },
+    });
+
+    if (!recurringCalendarEntries.length) {
+      throw new HttpException('Recurring group not found', HttpStatus.NOT_FOUND);
+    }
+
+    const existingRecurringRule = recurringCalendarEntries[0].recurringRule;
+    const { rule: updatedRule } = updatedCalendarEntry;
+
+    if (existingRecurringRule === updatedRule) {
+      return await this.updateRecurringEntriesWithTheSameRule(groupId, updatedCalendarEntry);
+    }
+
+    return await this.updateRecurringEntriesWithDifferentRule(groupId, updatedCalendarEntry);
+  }
+
   private generateRecurringEntries(
     recurringCalendarEntry: CreateRecurringCalendarEntry,
   ): Omit<CreateCalendarEntry, 'forceOverlap'>[] {
@@ -196,5 +226,50 @@ export class CalendarService {
     }
 
     return recurringEntries;
+  }
+
+  private async updateRecurringEntriesWithTheSameRule(
+    groupId: string,
+    updatedCalendarEntry: UpdatedRecurringCalendarEntry,
+  ) {
+    return await this.prismaService.calendarEntry.updateMany({
+      where: {
+        recurringGroup: groupId,
+      },
+      data: updatedCalendarEntry,
+    });
+  }
+
+  private async updateRecurringEntriesWithDifferentRule(
+    groupId: string,
+    updatedCalendarEntry: UpdatedRecurringCalendarEntry,
+  ) {
+    await this.deleteRecurringFutureCalendarEntries(groupId);
+
+    const remainingRecurringEntries = await this.prismaService.calendarEntry.findMany({
+      where: {
+        recurringGroup: groupId,
+      },
+      select: {
+        startDate: true,
+      },
+    });
+
+    if (!remainingRecurringEntries.length) {
+      return await this.createRecurringCalendarEntry(updatedCalendarEntry);
+    }
+
+    const { startDate } = remainingRecurringEntries[remainingRecurringEntries.length - 1];
+
+    await this.prismaService.calendarEntry.updateMany({
+      where: {
+        recurringGroup: groupId,
+      },
+      data: {
+        title: updatedCalendarEntry.title,
+      },
+    });
+
+    return await this.createRecurringCalendarEntry({ ...updatedCalendarEntry, startDate });
   }
 }
