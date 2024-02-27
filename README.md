@@ -19,6 +19,12 @@ This app uses [Prisma](https://www.prisma.io/) alongside with an in-memory SQLit
 pnpm prisma migrate dev
 ```
 
+In case you need to generate just the types provided by prisma, run 
+
+```bash
+pnpm prisma generate
+```
+
 ## Running the app locally
 
 To run locally, you can use the `pnpm start` or `pnpm start:dev` scripts. This will open a server at `localhost:3000`.

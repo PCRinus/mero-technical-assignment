@@ -16,6 +16,7 @@ import { CalendarService } from './calendar.service';
 import { ListAllCalendarEntriesDto } from './dtos/list-all-calendar-entries.dto';
 import { UpdateCalendarEntryDto } from './dtos/update-calendar-entry.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { CreateRecurringCalendarEntryDto } from './dtos/create-recurring-calendar-entry.dto';
 
 @ApiTags('Calendar')
 @Controller('calendar')
@@ -24,9 +25,7 @@ export class CalendarController {
 
   @Post()
   async createCalendarEntry(@Body() createCalendarDto: CreateCalendarEntryDto) {
-    const { start, end } = createCalendarDto;
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const { startDate, endDate } = createCalendarDto;
 
     if (startDate > endDate)
       throw new HttpException('Start date cannot be greater than end date', HttpStatus.BAD_REQUEST);
@@ -36,6 +35,19 @@ export class CalendarController {
       startDate,
       endDate,
     });
+  }
+
+  @Post('recurring')
+  async createRecurringCalendarEntry(@Body() recurringDto: CreateRecurringCalendarEntryDto) {
+    const { startDate, duration } = recurringDto;
+
+    if (startDate > duration)
+      throw new HttpException(
+        'Start date cannot be greater the end of the interval',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    return await this.calendarService.createRecurringCalendarEntry(recurringDto);
   }
 
   @Get()
@@ -58,9 +70,7 @@ export class CalendarController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCalendarDto: UpdateCalendarEntryDto,
   ) {
-    const { start, end } = updateCalendarDto;
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const { startDate, endDate } = updateCalendarDto;
     return await this.calendarService.updateCalendarEntry(id, {
       ...updateCalendarDto,
       startDate,

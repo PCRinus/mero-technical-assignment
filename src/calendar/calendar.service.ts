@@ -1,8 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CalendarEntry } from '@prisma/client';
 import { PrismaService } from '../shared/prisma.service';
+import { CreateRecurringCalendarEntryDto } from './dtos/create-recurring-calendar-entry.dto';
 
 const FETCH_LIMIT = 25;
+
+const DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24;
+const WEEK_IN_MILLISECONDS = DAY_IN_MILLISECONDS * 7;
 
 export type CreateCalendarEntry = {
   title: string;
@@ -11,6 +15,7 @@ export type CreateCalendarEntry = {
   forceOverlap?: boolean;
 };
 
+export type CreateRecurringCalendarEntry = CreateRecurringCalendarEntryDto;
 export type UpdatedCalendarEntry = {
   title: string;
   startDate: Date;
@@ -44,6 +49,21 @@ export class CalendarService {
     });
 
     return newEntry.id;
+  }
+
+  async createRecurringCalendarEntry(recurringCalendarEntry: CreateRecurringCalendarEntry) {
+    const recurringEntries = this.generateRecurringEntries(recurringCalendarEntry);
+    const createdIds = [];
+
+    //NOTE: since createMany is not supported in SQLite, we will need to iterate and create each entry
+    for await (const entry of recurringEntries) {
+      const result = await this.prismaService.calendarEntry.create({
+        data: entry,
+      });
+      createdIds.push(result.id);
+    }
+
+    return createdIds.length;
   }
 
   async listAllCalendarEntries(
@@ -102,5 +122,48 @@ export class CalendarService {
       },
       data: calendarEntryData,
     });
+  }
+
+  private generateRecurringEntries(
+    recurringCalendarEntry: CreateRecurringCalendarEntry,
+  ): Omit<CreateCalendarEntry, 'forceOverlap'>[] {
+    const { rule, startDate, duration } = recurringCalendarEntry;
+    const recurringEntries: Omit<CreateCalendarEntry, 'forceOverlap'>[] = [];
+
+    let recurringStartDate = startDate;
+
+    if (rule === 'daily') {
+      while (recurringStartDate < duration) {
+        const newDailyEndDate = new Date(recurringStartDate.getTime() + DAY_IN_MILLISECONDS);
+
+        const newEntry = {
+          title: recurringCalendarEntry.title,
+          startDate: recurringStartDate,
+          endDate: newDailyEndDate,
+        } satisfies Omit<CreateCalendarEntry, 'forceOverlap'>;
+
+        recurringEntries.push(newEntry);
+
+        recurringStartDate = newDailyEndDate;
+      }
+    }
+
+    if (rule === 'weekly') {
+      while (recurringStartDate < duration) {
+        const newWeeklyEndDate = new Date(recurringStartDate.getTime() + WEEK_IN_MILLISECONDS);
+
+        const newEntry = {
+          title: recurringCalendarEntry.title,
+          startDate: recurringStartDate,
+          endDate: newWeeklyEndDate,
+        } satisfies Omit<CreateCalendarEntry, 'forceOverlap'>;
+
+        recurringEntries.push(newEntry);
+
+        recurringStartDate = newWeeklyEndDate;
+      }
+    }
+
+    return recurringEntries;
   }
 }
