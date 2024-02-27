@@ -65,6 +65,16 @@ export class CalendarController {
     return await this.calendarService.deleteCalendarEntry(id);
   }
 
+  @Delete('recurring/:recurringGroupId')
+  async deleteRecurringCalendarEntry(@Param('recurringGroupId') groupId: string) {
+    return await this.calendarService.deleteRecurringCalendarEntries(groupId);
+  }
+
+  @Delete('recurring/:recurringGroupId/future')
+  async deleteFutureRecurringCalendarEntries(@Param('recurringGroupId') groupId: string) {
+    return await this.calendarService.deleteRecurringFutureCalendarEntries(groupId);
+  }
+
   @Put(':id')
   async updateCalendarEntry(
     @Param('id', ParseIntPipe) id: number,

@@ -101,6 +101,30 @@ export class CalendarService {
     });
   }
 
+  async deleteRecurringCalendarEntries(recurringGroupId: string): Promise<any> {
+    const result = await this.prismaService.calendarEntry.deleteMany({
+      where: {
+        recurringGroup: recurringGroupId,
+      },
+    });
+
+    return result;
+  }
+
+  async deleteRecurringFutureCalendarEntries(recurringGroupId: string): Promise<any> {
+    const now = new Date();
+    const result = await this.prismaService.calendarEntry.deleteMany({
+      where: {
+        startDate: {
+          gte: now,
+        },
+        recurringGroup: recurringGroupId,
+      },
+    });
+
+    return result;
+  }
+
   async updateCalendarEntry(
     id: number,
     updatedCalendarEntry: UpdatedCalendarEntry,
