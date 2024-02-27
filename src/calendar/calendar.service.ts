@@ -62,6 +62,7 @@ export class CalendarService {
       const data: Omit<CalendarEntry, 'id' | 'createdAt' | 'updatedAt'> = {
         ...entry,
         recurringGroup: recurringGroupUuid,
+        recurringRule: recurringCalendarEntry.rule,
       };
       const result = await this.prismaService.calendarEntry.create({
         data,
